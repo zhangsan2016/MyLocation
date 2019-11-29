@@ -2,19 +2,28 @@ package smartcity.ldgd.com.mylocation;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
+import com.amap.api.maps.AMap;
+import com.amap.api.maps.AMapOptions;
+import com.amap.api.maps.CameraUpdateFactory;
+import com.amap.api.maps.MapView;
+import com.amap.api.maps.UiSettings;
 
 import smartcity.ldgd.com.mylocation.util.LogUtil;
 import smartcity.ldgd.com.mylocation.util.NetUtils;
@@ -27,20 +36,46 @@ public class MainActivity extends AppCompatActivity {
     public AMapLocationClientOption mLocationOption = null;
     private AMapLocation mAMapLocation = null;
 
+    private MapView mMapView = null;
+    private AMap mAMap = null;
+    private UiSettings mUiSettings;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ActionBar actionBar = getSupportActionBar();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Window window = getWindow();
+
+            //设置修改状态栏
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
+            //设置状态栏的颜色，和你的app主题或者标题栏颜色设置一致就ok了
+            window.setStatusBarColor(getResources().getColor(R.color.colorGreen));
+
+            if (actionBar != null) {
+                actionBar.hide();
+            }
+        }
         setContentView(R.layout.activity_main);
+        initView(savedInstanceState);
+
 
         // 检测网络状态
         initNet();
+
+        // 初始化地图
+        initMap();
 
         // 请求权限
         requestPermission();
 
         // 初始化定位
         initLocation();
+
+
 
       /*  //给定位客户端对象设置定位参数
         mLocationClient.setLocationOption(mLocationOption);
@@ -50,11 +85,32 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-
+    private void initView(Bundle savedInstanceState) {
+        //获取地图控件引用
+        mMapView = (MapView) findViewById(R.id.map);
+        //在activity执行onCreate时执行mMapView.onCreate(savedInstanceState)，创建地图
+        mMapView.onCreate(savedInstanceState);
     }
+
+    private void initMap() {
+        if (mAMap == null) {
+            // 初始化地图
+            mAMap = mMapView.getMap();
+            mUiSettings = mAMap.getUiSettings();
+          //  mAMap.setOnMapLoadedListener(this);
+            // 设置地图样式
+          //  setMapCustomStyleFile(this);
+            // 设置地图logo显示在右下方
+            mUiSettings.setLogoPosition(AMapOptions.LOGO_POSITION_BOTTOM_RIGHT);
+            // 设置地图默认的缩放按钮是否显示
+            mUiSettings.setZoomControlsEnabled(false);
+            // 设置地图缩放比例
+            mAMap.moveCamera(CameraUpdateFactory.zoomTo(5f));
+
+
+        }
+    }
+
 
     private void requestPermission() {
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -156,9 +212,9 @@ public class MainActivity extends AppCompatActivity {
             boolean wifi = NetUtils.isWifi(MainActivity.this);
             boolean rd = NetUtils.is3rd(MainActivity.this);
             if (wifi) {
-                Toast.makeText(MainActivity.this, "WIFI已经连接", Toast.LENGTH_SHORT).show();
+                // Toast.makeText(MainActivity.this, "WIFI已经连接", Toast.LENGTH_SHORT).show();
             } else if (rd) {
-                Toast.makeText(MainActivity.this, "手机流量已经连接", Toast.LENGTH_SHORT).show();
+                // Toast.makeText(MainActivity.this, "手机流量已经连接", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(MainActivity.this, "网络连接不可用，请检查网络设置", Toast.LENGTH_SHORT).show();
                 NetUtils.openSetting(MainActivity.this);

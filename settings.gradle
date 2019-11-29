@@ -1,1 +1,1 @@
-include ':app', ':diagnose:locdiagnoselib', ':AMapLocationDemo'
+include ':app', ':diagnose:locdiagnoselib', ':AMapLocationDemo', ':AMap2DDemo', ':AMap3DDemo'

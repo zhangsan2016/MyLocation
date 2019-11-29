@@ -2,6 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/AMap2DDemo/AMap2DDemo.iml" filepath="$PROJECT_DIR$/AMap2DDemo/AMap2DDemo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/AMap3DDemo/AMap3DDemo.iml" filepath="$PROJECT_DIR$/AMap3DDemo/AMap3DDemo.iml" />
       <module fileurl="file://$PROJECT_DIR$/AMapLocationDemo/AMapLocationDemo.iml" filepath="$PROJECT_DIR$/AMapLocationDemo/AMapLocationDemo.iml" />
       <module fileurl="file://$PROJECT_DIR$/MyLocation.iml" filepath="$PROJECT_DIR$/MyLocation.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
