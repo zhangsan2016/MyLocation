@@ -1,6 +1,8 @@
 package smartcity.ldgd.com.mylocation;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -15,7 +17,10 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.amap.api.location.AMapLocation;
@@ -148,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // 联系中心
-                Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:"+"110"));
+                Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + "110"));
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
 
@@ -158,9 +163,70 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // 报警
+                final String code = randomCode();
+                View view = View.inflate(MainActivity.this, R.layout.alarm_verification_item, null);
+                TextView tvCode = view.findViewById(R.id.tv_code);
+                final EditText edWriteCode = view.findViewById(R.id.ed_write_code);
+                tvCode.setText(code.replace("", " ").trim());
+                final AlertDialog alarmDialog = new AlertDialog.Builder(MainActivity.this).setTitle("请输入验证码")
+                        .setView(view)
+                        .setCancelable(false)
+                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+                        }).setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+                        }).create();
+
+
+                alarmDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                    @Override
+                    public void onShow(DialogInterface dialogInterface) {
+                        Button btnPositive = alarmDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+                        btnPositive.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                String edCode = edWriteCode.getText().toString().trim();
+                                if (edCode.equals(code)) {
+                                    showToast("验证成功！");
+                                } else {
+                                    showToast("验证码输入错误！");
+                                }
+                            }
+                        });
+                    }
+                });
+                alarmDialog.show();
+
 
             }
         });
+    }
+
+    private String randomCode() {
+        String strRand = "";
+        for (int i = 0; i < 4; i++) {
+            strRand += String.valueOf((int) (Math.random() * 10));
+        }
+        return strRand;
+    }
+
+    private void showToast(final String str) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast toast = Toast.makeText(MainActivity.this, str, Toast.LENGTH_SHORT);
+                toast.setText(str);
+                toast.show();
+
+            }
+        });
+
     }
 
     private void initMap() {

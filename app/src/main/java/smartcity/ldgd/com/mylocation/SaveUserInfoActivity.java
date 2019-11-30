@@ -89,9 +89,14 @@ public class SaveUserInfoActivity extends AppCompatActivity {
 
                 if (carNumber.equals("")) {
                     showToast("车牌号不能为空");
+                    // 关闭加载框
+                    stopProgress();
                     return;
                 } else if (phone.equals("")) {
                     showToast("手机号不能为空");
+                    // 关闭加载框
+                    stopProgress();
+
                     return;
                 }
 
@@ -131,7 +136,9 @@ public class SaveUserInfoActivity extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(SaveUserInfoActivity.this, str, Toast.LENGTH_SHORT).show();
+                Toast toast = Toast.makeText(SaveUserInfoActivity.this, str, Toast.LENGTH_SHORT);
+                toast.setText(str);
+                toast.show();
             }
         });
 
