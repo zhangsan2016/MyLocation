@@ -24,8 +24,12 @@ import com.amap.api.maps.AMapOptions;
 import com.amap.api.maps.CameraUpdateFactory;
 import com.amap.api.maps.MapView;
 import com.amap.api.maps.UiSettings;
+import com.amap.api.maps.model.BitmapDescriptorFactory;
+import com.amap.api.maps.model.CameraPosition;
+import com.amap.api.maps.model.LatLng;
+import com.amap.api.maps.model.Marker;
+import com.amap.api.maps.model.MarkerOptions;
 
-import smartcity.ldgd.com.mylocation.util.LogUtil;
 import smartcity.ldgd.com.mylocation.util.NetUtils;
 
 public class MainActivity extends AppCompatActivity {
@@ -39,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
     private MapView mMapView = null;
     private AMap mAMap = null;
     private UiSettings mUiSettings;
+    private Marker marker = null;
+    private MarkerOptions markerOption;
 
 
     @Override
@@ -97,9 +103,9 @@ public class MainActivity extends AppCompatActivity {
             // 初始化地图
             mAMap = mMapView.getMap();
             mUiSettings = mAMap.getUiSettings();
-          //  mAMap.setOnMapLoadedListener(this);
+            //  mAMap.setOnMapLoadedListener(this);
             // 设置地图样式
-          //  setMapCustomStyleFile(this);
+            //  setMapCustomStyleFile(this);
             // 设置地图logo显示在右下方
             mUiSettings.setLogoPosition(AMapOptions.LOGO_POSITION_BOTTOM_RIGHT);
             // 设置地图默认的缩放按钮是否显示
@@ -107,8 +113,36 @@ public class MainActivity extends AppCompatActivity {
             // 设置地图缩放比例
             mAMap.moveCamera(CameraUpdateFactory.zoomTo(5f));
 
+            // 添加覆盖物
+            markerOption = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_openmap_mark))
+                    .position(new LatLng(22.493403, 114.10998))
+                    .draggable(true);
+            marker = mAMap.addMarker(markerOption);
 
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        mLocationClient.stopLocation();
+        //在activity执行onDestroy时执行mMapView.onDestroy()，销毁地图
+        mMapView.onDestroy();
+        super.onDestroy();
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //在activity执行onResume时执行mMapView.onResume ()，重新绘制加载地图
+        mMapView.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //在activity执行onPause时执行mMapView.onPause ()，暂停地图的绘制
+        mMapView.onPause();
     }
 
 
@@ -153,6 +187,21 @@ public class MainActivity extends AppCompatActivity {
                         amapLocation.getAoiName();//获取当前定位点的AOI信息
 
                         Log.e("sss", "xxx 当前位置（经纬度） = " + amapLocation.getLatitude() + ":" + amapLocation.getLongitude() + " 当前位置在：" + amapLocation.getAddress());
+
+                        // 设置覆盖物
+                        if (mAMap != null) {
+                            mAMap.clear();
+                        }
+                        String address = amapLocation.getDistrict() + amapLocation.getStreet() + amapLocation.getAoiName() + amapLocation.getStreetNum();
+                        markerOption = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_openmap_mark))
+                                .title("当前位置").snippet(address).position(new LatLng(amapLocation.getLatitude(), amapLocation.getLongitude()))
+                                .draggable(true);
+                        marker = mAMap.addMarker(markerOption);
+                        marker.showInfoWindow();
+
+                        // 设置地图中心点
+                        mAMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(new LatLng(amapLocation.getLatitude(), amapLocation.getLongitude()), 16, 0, 0)));
+
                     } else {
                         //显示错误信息ErrCode是错误码，errInfo是错误信息，详见错误码表。
                         Log.e("AmapError", "location Error, ErrCode:"
@@ -241,10 +290,4 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        mLocationClient.stopLocation();
-        LogUtil.e("xxx onDestroy");
-    }
 }
