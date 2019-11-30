@@ -1,6 +1,7 @@
 package smartcity.ldgd.com.mylocation;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -31,6 +32,7 @@ import com.amap.api.maps.model.Marker;
 import com.amap.api.maps.model.MarkerOptions;
 
 import smartcity.ldgd.com.mylocation.util.NetUtils;
+import smartcity.ldgd.com.mylocation.util.SharedPreferencesUtil;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -68,6 +70,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         initView(savedInstanceState);
 
+        // 检查用户信息是否已经录入
+        checkUserInfo();
+
 
         // 检测网络状态
         initNet();
@@ -89,6 +94,21 @@ public class MainActivity extends AppCompatActivity {
         mLocationClient.startLocation();*/
 
 
+    }
+
+    private void checkUserInfo() {
+        SharedPreferencesUtil.getInstance(this, "ldgd");
+        String userInfo = (String) SharedPreferencesUtil.getData("user", "");
+        if(userInfo.equals("")){
+       // 显示用户信息录入界面
+            startSaveUser();
+        }
+
+    }
+
+    private void startSaveUser() {
+        Intent intent = new Intent(this,SaveUserInfoActivity.class);
+        startActivity(intent);
     }
 
     private void initView(Bundle savedInstanceState) {
