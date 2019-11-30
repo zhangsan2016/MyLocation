@@ -8,6 +8,8 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Spinner;
 
 import java.util.ArrayList;
@@ -17,6 +19,8 @@ public class SaveUserInfoActivity extends AppCompatActivity {
 
     private List<String> list = new ArrayList<String>();
     private Spinner sp_type;
+    private EditText et_car_number,et_phone,et_shipper_company,et_receiving_company;
+    private Button btAddUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +49,12 @@ public class SaveUserInfoActivity extends AppCompatActivity {
 
     private void initView() {
         sp_type = (Spinner) this.findViewById(R.id.sp_type);
+        et_car_number = (EditText) this.findViewById(R.id.et_car_number);
+        et_phone = (EditText) this.findViewById(R.id.et_phone);
+        et_shipper_company = (EditText) this.findViewById(R.id.et_shipper_company);
+        et_receiving_company = (EditText) this.findViewById(R.id.et_receiving_company);
+        btAddUser = (Button) this.findViewById(R.id.bt_add_user);
+
 
         initSpinner();
 
