@@ -179,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
             mAMap.moveCamera(CameraUpdateFactory.zoomTo(5f));
 
             // 添加覆盖物
-            markerOption = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_openmap_mark))
+            markerOption = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_openmap_mark2))
                     .position(new LatLng(22.493403, 114.10998))
                     .draggable(true);
             marker = mAMap.addMarker(markerOption);
@@ -258,7 +258,7 @@ public class MainActivity extends AppCompatActivity {
                             mAMap.clear();
                         }
                         String address = amapLocation.getDistrict() + amapLocation.getStreet() + amapLocation.getAoiName() + amapLocation.getStreetNum();
-                        markerOption = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_openmap_mark))
+                        markerOption = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_openmap_mark2))
                                 .title("当前位置").snippet(address).position(new LatLng(amapLocation.getLatitude(), amapLocation.getLongitude()))
                                 .draggable(true);
                         marker = mAMap.addMarker(markerOption);
