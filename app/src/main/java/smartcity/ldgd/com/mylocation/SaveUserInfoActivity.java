@@ -114,6 +114,7 @@ public class SaveUserInfoActivity extends AppCompatActivity {
                             // 关闭加载框
                             stopProgress();
                             showToast("录入成功");
+                            SaveUserInfoActivity.this.finish();
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }

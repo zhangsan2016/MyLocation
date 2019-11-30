@@ -162,11 +162,14 @@ public class UserInfoActivity extends AppCompatActivity {
         // 初始化 Gson
         Gson gson = new Gson();
         User currentUser = gson.fromJson(userInfo, User.class);
-        et_car_number.setText(currentUser.getCarNumber() + "");
-        et_phone.setText(currentUser.getPhone() + "");
-        et_receiving_company.setText(currentUser.getReceivingCompany() + "");
-        et_shipper_company.setText(currentUser.getShipperCompany() + "");
-        sp_type.setSelection(currentUser.getTypeNub());
+
+        if(currentUser != null){
+            et_car_number.setText(currentUser.getCarNumber() + "");
+            et_phone.setText(currentUser.getPhone() + "");
+            et_receiving_company.setText(currentUser.getReceivingCompany() + "");
+            et_shipper_company.setText(currentUser.getShipperCompany() + "");
+            sp_type.setSelection(currentUser.getTypeNub());
+        }
 
 
     }
