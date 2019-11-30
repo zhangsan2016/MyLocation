@@ -7,10 +7,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,8 +21,10 @@ public class SaveUserInfoActivity extends AppCompatActivity {
 
     private List<String> list = new ArrayList<String>();
     private Spinner sp_type;
-    private EditText et_car_number,et_phone,et_shipper_company,et_receiving_company;
+    private EditText et_car_number, et_phone, et_shipper_company, et_receiving_company;
     private Button btAddUser;
+    // 选中的类型号
+    private String spinnerTypeNub;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +48,57 @@ public class SaveUserInfoActivity extends AppCompatActivity {
 
         initView();
 
+        intitListener();
+
+
+    }
+
+    private void intitListener() {
+        //添加Spinner事件监听
+        sp_type.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                spinnerTypeNub = list.get(position);
+                //设置显示当前选择的项
+                parent.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        btAddUser.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                String carNumber = et_car_number.getText().toString().trim();
+                int typeNub = sp_type.getSelectedItemPosition();
+                String phone = et_phone.getText().toString().trim();
+                String shipperCompany = et_shipper_company.getText().toString().trim();
+                String receivingCompany = et_receiving_company.getText().toString().trim();
+
+                if (carNumber.equals("")) {
+                    showToast("车牌号不能为空");
+                    return;
+                } else if (phone.equals("")) {
+                    showToast("手机号不能为空");
+                    return;
+                }
+
+            }
+        });
+
+    }
+
+    private void showToast(final String str) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(SaveUserInfoActivity.this, str, Toast.LENGTH_SHORT).show();
+            }
+        });
 
     }
 
