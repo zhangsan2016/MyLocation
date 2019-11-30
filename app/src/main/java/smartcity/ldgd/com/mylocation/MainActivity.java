@@ -3,6 +3,7 @@ package smartcity.ldgd.com.mylocation;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -14,6 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.amap.api.location.AMapLocation;
@@ -30,7 +32,9 @@ import com.amap.api.maps.model.CameraPosition;
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.Marker;
 import com.amap.api.maps.model.MarkerOptions;
+import com.google.gson.Gson;
 
+import smartcity.ldgd.com.mylocation.type.User;
 import smartcity.ldgd.com.mylocation.util.LogUtil;
 import smartcity.ldgd.com.mylocation.util.NetUtils;
 import smartcity.ldgd.com.mylocation.util.SharedPreferencesUtil;
@@ -49,6 +53,9 @@ public class MainActivity extends AppCompatActivity {
     private UiSettings mUiSettings;
     private Marker marker = null;
     private MarkerOptions markerOption;
+    // 四个按钮
+    private LinearLayout llUserInfo, ll_alarm, ll_call;
+    private User currentUser = null;
 
 
     @Override
@@ -70,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         setContentView(R.layout.activity_main);
+
         initView(savedInstanceState);
 
         // 检查用户信息是否已经录入
@@ -105,6 +113,10 @@ public class MainActivity extends AppCompatActivity {
         if (userInfo.equals("")) {
             // 显示用户信息录入界面
             startSaveUser();
+        } else {
+            // 初始化 Gson
+            Gson gson = new Gson();
+            currentUser = gson.fromJson(userInfo, User.class);
         }
 
     }
@@ -119,6 +131,36 @@ public class MainActivity extends AppCompatActivity {
         mMapView = (MapView) findViewById(R.id.map);
         //在activity执行onCreate时执行mMapView.onCreate(savedInstanceState)，创建地图
         mMapView.onCreate(savedInstanceState);
+        llUserInfo = (LinearLayout) this.findViewById(R.id.ll_user_info);
+        ll_call = (LinearLayout) this.findViewById(R.id.ll_call);
+        ll_alarm = (LinearLayout) this.findViewById(R.id.ll_alarm);
+
+
+        llUserInfo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 用户信息
+                Intent intent = new Intent(MainActivity.this, UserInfoActivity.class);
+                startActivity(intent);
+            }
+        });
+        ll_call.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 联系中心
+                Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:"+"110"));
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+
+            }
+        });
+        ll_alarm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 报警
+
+            }
+        });
     }
 
     private void initMap() {

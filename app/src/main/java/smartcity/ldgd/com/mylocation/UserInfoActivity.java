@@ -15,6 +15,8 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +24,9 @@ import smartcity.ldgd.com.mylocation.type.User;
 import smartcity.ldgd.com.mylocation.util.LogUtil;
 import smartcity.ldgd.com.mylocation.util.SharedPreferencesUtil;
 
-public class SaveUserInfoActivity extends AppCompatActivity {
+import static smartcity.ldgd.com.mylocation.MainActivity.USER_INFO;
+
+public class UserInfoActivity extends AppCompatActivity {
 
     private List<String> list = new ArrayList<String>();
     private Spinner sp_type;
@@ -49,7 +53,7 @@ public class SaveUserInfoActivity extends AppCompatActivity {
                 actionBar.hide();
             }
         }
-        setContentView(R.layout.activity_save_user_info);
+        setContentView(R.layout.activity_user_info);
 
         initView();
 
@@ -104,22 +108,21 @@ public class SaveUserInfoActivity extends AppCompatActivity {
 
                 LogUtil.e("xxx user = " + user.toString());
 
-                SharedPreferencesUtil.putData(MainActivity.USER_INFO,user);
+                SharedPreferencesUtil.putData(USER_INFO, user);
 
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            Thread.sleep(2000);
-                            // 关闭加载框
-                            stopProgress();
-                            showToast("录入成功");
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(2000);
+                        // 关闭加载框
+                        stopProgress();
+                        showToast("修改成功");
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                }).start();
-
+                }
+            }).start();
 
             }
         });
@@ -130,7 +133,7 @@ public class SaveUserInfoActivity extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(SaveUserInfoActivity.this, str, Toast.LENGTH_SHORT).show();
+                Toast.makeText(UserInfoActivity.this, str, Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -147,6 +150,24 @@ public class SaveUserInfoActivity extends AppCompatActivity {
 
         initSpinner();
 
+        // 初始化个人信息
+        initUserInfo();
+
+
+    }
+
+    private void initUserInfo() {
+        //  SharedPreferencesUtil.getInstance(this, "ldgd");
+        String userInfo = (String) SharedPreferencesUtil.getData(USER_INFO, "");
+        // 初始化 Gson
+        Gson gson = new Gson();
+        User currentUser = gson.fromJson(userInfo, User.class);
+        et_car_number.setText(currentUser.getCarNumber() + "");
+        et_phone.setText(currentUser.getPhone() + "");
+        et_receiving_company.setText(currentUser.getReceivingCompany() + "");
+        et_shipper_company.setText(currentUser.getShipperCompany() + "");
+        sp_type.setSelection(currentUser.getTypeNub());
+
 
     }
 
@@ -161,7 +182,7 @@ public class SaveUserInfoActivity extends AppCompatActivity {
         list.add("放射性物品");
         list.add("腐蚀品");
 
-        ArrayAdapter arrayAdapter = new ArrayAdapter<String>(SaveUserInfoActivity.this, android.R.layout.simple_spinner_item, list);
+        ArrayAdapter arrayAdapter = new ArrayAdapter<String>(UserInfoActivity.this, android.R.layout.simple_spinner_item, list);
         sp_type.setAdapter(arrayAdapter);
     }
 
@@ -170,16 +191,18 @@ public class SaveUserInfoActivity extends AppCompatActivity {
     }
 
     protected ProgressDialog mProgress;
+
     protected void showProgress() {
 
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mProgress = ProgressDialog.show(SaveUserInfoActivity.this, "", "请稍等...");
+                mProgress = ProgressDialog.show(UserInfoActivity.this, "", "请稍等...");
             }
         });
 
     }
+
     private void stopProgress() {
         runOnUiThread(new Runnable() {
             @Override
