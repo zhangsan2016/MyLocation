@@ -17,6 +17,10 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
+import smartcity.ldgd.com.mylocation.type.User;
+import smartcity.ldgd.com.mylocation.util.LogUtil;
+import smartcity.ldgd.com.mylocation.util.SharedPreferencesUtil;
+
 public class SaveUserInfoActivity extends AppCompatActivity {
 
     private List<String> list = new ArrayList<String>();
@@ -87,6 +91,20 @@ public class SaveUserInfoActivity extends AppCompatActivity {
                     return;
                 }
 
+                User user = new User();
+                user.setCarNumber(carNumber);
+                user.setTypeNub(typeNub);
+                user.setPhone(phone);
+                user.setShipperCompany(shipperCompany);
+                user.setReceivingCompany(receivingCompany);
+
+                LogUtil.e("xxx user = " + user.toString());
+
+                SharedPreferencesUtil.putData(MainActivity.USER_INFO,user);
+
+
+
+
             }
         });
 
@@ -117,15 +135,16 @@ public class SaveUserInfoActivity extends AppCompatActivity {
     }
 
     private void initSpinner() {
-        list.add("爆炸品");
+        list.add("杂类");
         list.add("气体");
+        list.add("爆炸品");
         list.add("易燃液体");
         list.add("易燃固体");
         list.add("氧化剂");
         list.add("毒害品");
         list.add("放射性物品");
         list.add("腐蚀品");
-        list.add("杂类");
+
         ArrayAdapter arrayAdapter = new ArrayAdapter<String>(SaveUserInfoActivity.this, android.R.layout.simple_spinner_item, list);
         sp_type.setAdapter(arrayAdapter);
     }

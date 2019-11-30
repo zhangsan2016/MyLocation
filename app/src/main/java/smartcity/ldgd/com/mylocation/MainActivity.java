@@ -31,10 +31,12 @@ import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.Marker;
 import com.amap.api.maps.model.MarkerOptions;
 
+import smartcity.ldgd.com.mylocation.util.LogUtil;
 import smartcity.ldgd.com.mylocation.util.NetUtils;
 import smartcity.ldgd.com.mylocation.util.SharedPreferencesUtil;
 
 public class MainActivity extends AppCompatActivity {
+    public static final String USER_INFO = "USER_INFO";
 
     //声明AMapLocationClient类对象
     public AMapLocationClient mLocationClient = null;
@@ -98,16 +100,17 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkUserInfo() {
         SharedPreferencesUtil.getInstance(this, "ldgd");
-        String userInfo = (String) SharedPreferencesUtil.getData("user", "");
-        if(userInfo.equals("")){
-       // 显示用户信息录入界面
+        String userInfo = (String) SharedPreferencesUtil.getData(USER_INFO, "");
+        LogUtil.e("xxx userinfo = " + userInfo);
+        if (userInfo.equals("")) {
+            // 显示用户信息录入界面
             startSaveUser();
         }
 
     }
 
     private void startSaveUser() {
-        Intent intent = new Intent(this,SaveUserInfoActivity.class);
+        Intent intent = new Intent(this, SaveUserInfoActivity.class);
         startActivity(intent);
     }
 
