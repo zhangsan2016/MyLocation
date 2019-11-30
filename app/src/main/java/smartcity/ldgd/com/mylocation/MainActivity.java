@@ -2,6 +2,7 @@ package smartcity.ldgd.com.mylocation;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -39,7 +40,16 @@ import com.amap.api.maps.model.Marker;
 import com.amap.api.maps.model.MarkerOptions;
 import com.google.gson.Gson;
 
+import java.io.IOException;
+
+import okhttp3.Callback;
+import okhttp3.FormBody;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import smartcity.ldgd.com.mylocation.type.User;
+import smartcity.ldgd.com.mylocation.type.UserJson;
+import smartcity.ldgd.com.mylocation.util.HttpUtil;
 import smartcity.ldgd.com.mylocation.util.LogUtil;
 import smartcity.ldgd.com.mylocation.util.NetUtils;
 import smartcity.ldgd.com.mylocation.util.SharedPreferencesUtil;
@@ -52,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     //声明AMapLocationClientOption对象
     public AMapLocationClientOption mLocationOption = null;
     private AMapLocation mAMapLocation = null;
+    private AlertDialog alarmDialog;
 
     private MapView mMapView = null;
     private AMap mAMap = null;
@@ -168,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
                 TextView tvCode = view.findViewById(R.id.tv_code);
                 final EditText edWriteCode = view.findViewById(R.id.ed_write_code);
                 tvCode.setText(code.replace("", " ").trim());
-                final AlertDialog alarmDialog = new AlertDialog.Builder(MainActivity.this).setTitle("请输入验证码")
+                alarmDialog = new AlertDialog.Builder(MainActivity.this).setTitle("请输入验证码")
                         .setView(view)
                         .setCancelable(false)
                         .setPositiveButton("确定", new DialogInterface.OnClickListener() {
@@ -193,7 +204,10 @@ public class MainActivity extends AppCompatActivity {
                             public void onClick(View view) {
                                 String edCode = edWriteCode.getText().toString().trim();
                                 if (edCode.equals(code)) {
-                                    showToast("验证成功！");
+
+                                    // 发送报警信息
+                                    sendAlarm();
+
                                 } else {
                                     showToast("验证码输入错误！");
                                 }
@@ -206,6 +220,83 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void sendAlarm() {
+
+        if (marker == null) {
+            showToast("获取定位失败");
+            return;
+        }
+
+        showProgress();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                String url = "https://iot2.sz-luoding.com:888/api/vehicle_alarm/new";
+
+                Gson gson = new Gson();
+                String userInfo = (String) SharedPreferencesUtil.getData(USER_INFO, "");
+                currentUser = gson.fromJson(userInfo, User.class);
+
+                //创建json
+                LatLng latLng = marker.getPosition();
+                UserJson userJson = new UserJson(currentUser.getCarNumber(), Double.toString(latLng.longitude), Double.toString(latLng.latitude));
+
+
+                // 创建请求的参数body
+                //   String postBody = "{\"where\":{\"PROJECT\":" + title + "},\"size\":5000}";
+                String postBody = new Gson().toJson(userJson);
+                RequestBody requestBody = FormBody.create(MediaType.parse("application/json"), postBody);
+
+                LogUtil.e("postBody = " + postBody);
+
+
+                HttpUtil.sendSookiePostHttpRequest(url, new Callback() {
+
+                    @Override
+                    public void onFailure(okhttp3.Call call, IOException e) {
+                        showToast("连接服务器失败！");
+                        stopProgress();
+                    }
+
+                    @Override
+                    public void onResponse(okhttp3.Call call, Response response) throws IOException {
+                        try {
+
+                            String json = response.body().string();
+                            LogUtil.e("json = " + json);
+
+
+                            stopProgress();
+                            alarmDialog.cancel();
+                            showToast("报警成功");
+
+                           /* // 解析返回过来的json
+                            Gson gson = new Gson();
+                            LoginJson loginInfo = gson.fromJson(json, LoginJson.class);
+
+
+                            if (loginInfo.getErrno() == 0) {
+
+                                reportDevice(xmlConfig, uuid, loginInfo.getData().getToken().getToken());
+
+                            } else {
+                                showToast("连接服务器失败！");
+                            }*/
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            showToast("获取异常错误 ：" + e.getMessage());
+                        }
+
+                    }
+                }, requestBody);
+
+            }
+        }).start();
+
+
     }
 
     private String randomCode() {
@@ -229,6 +320,28 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    protected ProgressDialog mProgress;
+
+    protected void showProgress() {
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mProgress = ProgressDialog.show(MainActivity.this, "", "请稍等...");
+            }
+        });
+
+    }
+
+    private void stopProgress() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mProgress.cancel();
+            }
+        });
+    }
+
     private void initMap() {
         if (mAMap == null) {
             // 初始化地图
@@ -245,10 +358,10 @@ public class MainActivity extends AppCompatActivity {
             mAMap.moveCamera(CameraUpdateFactory.zoomTo(5f));
 
             // 添加覆盖物
-            markerOption = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_openmap_mark2))
+        /*    markerOption = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_openmap_mark2))
                     .position(new LatLng(22.493403, 114.10998))
                     .draggable(true);
-            marker = mAMap.addMarker(markerOption);
+            marker = mAMap.addMarker(markerOption);*/
 
         }
     }
