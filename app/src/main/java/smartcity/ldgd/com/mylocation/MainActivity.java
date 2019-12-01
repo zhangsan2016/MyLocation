@@ -282,6 +282,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
                 userJson.setCustomer(currentUser.getReceivingCompany());
 
                 if (true) {
+
                     LogUtil.e("xxx" + userJson);
                     stopProgress();
                     return;
