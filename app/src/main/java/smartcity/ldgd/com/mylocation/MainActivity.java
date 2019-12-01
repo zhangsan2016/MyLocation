@@ -205,6 +205,8 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
         ll_alarm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // 隐藏 InfoWindow
+                moveMarker.hideInfoWindow();
                 // 报警
                 final String code = randomCode();
                 View view = View.inflate(MainActivity.this, R.layout.alarm_verification_item, null);
@@ -237,6 +239,9 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
                                 String edCode = edWriteCode.getText().toString().trim();
                                 if (edCode.equals(code)) {
 
+
+                                    // 隐藏 InfoWindow
+                                    moveMarker.hideInfoWindow();
                                     // 发送报警信息
                                     sendAlarm();
 
@@ -349,7 +354,6 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
 
             }
         }).start();
-
 
     }
 
