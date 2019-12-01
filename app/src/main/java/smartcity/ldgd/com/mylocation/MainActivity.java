@@ -48,6 +48,8 @@ import com.amap.api.services.geocoder.RegeocodeResult;
 import com.google.gson.Gson;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -65,6 +67,7 @@ import static smartcity.ldgd.com.mylocation.R.id.map;
 
 public class MainActivity extends AppCompatActivity implements AMap.OnCameraChangeListener, GeocodeSearch.OnGeocodeSearchListener, AMap.OnMapClickListener, AMap.OnMapTouchListener {
     public static final String USER_INFO = "USER_INFO";
+    private List<String> list = new ArrayList<String>();
 
     //声明AMapLocationClient类对象
     public AMapLocationClient mLocationClient = null;
@@ -169,6 +172,16 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
         ll_call = (LinearLayout) this.findViewById(R.id.ll_call);
         ll_alarm = (LinearLayout) this.findViewById(R.id.ll_alarm);
         iv_reposition = (ImageView) this.findViewById(R.id.iv_reposition);
+
+        list.add("杂类");
+        list.add("气体");
+        list.add("爆炸品");
+        list.add("易燃液体");
+        list.add("易燃固体");
+        list.add("氧化剂");
+        list.add("毒害品");
+        list.add("放射性物品");
+        list.add("腐蚀品");
 
 
         llUserInfo.setOnClickListener(new View.OnClickListener() {
@@ -280,10 +293,10 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
                 userJson.setContact(currentUser.getPhone());
                 userJson.setCompany(currentUser.getShipperCompany());
                 userJson.setCustomer(currentUser.getReceivingCompany());
-                userJson.setDangerType(currentUser.getTypeNub() + "");
+                userJson.setDangerType(list.get(currentUser.getTypeNub()));
 
 
-                    LogUtil.e("xxx" + userJson);
+                LogUtil.e("xxx" + userJson);
 
                 // 创建请求的参数body
                 //   String postBody = "{\"where\":{\"PROJECT\":" + title + "},\"size\":5000}";
@@ -626,7 +639,6 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
             // moveMarker.setPosition(cameraPosition.target);
             //    moveMarker.setSnippet(latLng.toString());
             moveMarker.setPosition(new LatLng(latLng.latitude, latLng.longitude));
-
 
 
         }
