@@ -15,6 +15,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
@@ -115,6 +116,9 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
         }
         setContentView(R.layout.activity_main);
 
+
+
+
         initView(savedInstanceState);
 
         // 检查用户信息是否已经录入
@@ -209,9 +213,13 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
                 moveMarker.hideInfoWindow();
                 // 报警
                 final String code = randomCode();
-                View view = View.inflate(MainActivity.this, R.layout.alarm_verification_item, null);
+
+
+                View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.alarm_verification_item, null);
                 TextView tvCode = view.findViewById(R.id.tv_code);
+                // edWriteCode 获取焦点
                 final EditText edWriteCode = view.findViewById(R.id.ed_write_code);
+
                 tvCode.setText(code.replace("", " ").trim());
                 alarmDialog = new AlertDialog.Builder(MainActivity.this).setTitle("请输入验证码")
                         .setView(view)
@@ -236,9 +244,9 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
                         btnPositive.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
+
                                 String edCode = edWriteCode.getText().toString().trim();
                                 if (edCode.equals(code)) {
-
 
                                     // 隐藏 InfoWindow
                                     moveMarker.hideInfoWindow();
@@ -253,6 +261,19 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
                     }
                 });
                 alarmDialog.show();
+
+              /*  //设置可获得焦点
+                edWriteCode.setFocusable(true);
+                edWriteCode.setFocusableInTouchMode(true);
+                //请求获得焦点
+                edWriteCode.requestFocus();
+                //调用系统输入法
+                InputMethodManager inputManager = (InputMethodManager) edWriteCode
+                        .getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                inputManager.showSoftInput(edWriteCode, 0);
+
+                alarmDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+                alarmDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);*/
             }
         });
 
@@ -359,7 +380,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
 
     private String randomCode() {
         String strRand = "";
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 2; i++) {
             strRand += String.valueOf((int) (Math.random() * 10));
         }
         return strRand;
@@ -668,11 +689,15 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
                     && result.getRegeocodeAddress().getFormatAddress() != null) {
 
                 addressName = result.getRegeocodeAddress().getFormatAddress();
-                if( addressName.length() >= 20){
-                    StringBuffer stringBuffer = new StringBuffer(addressName);
-                    addressName = stringBuffer.insert(20, "\n").toString();
+
+                StringBuffer stringBuffer = new StringBuffer(addressName);
+                if (addressName.length() >= 20) {
+                    stringBuffer.insert(20, "\n").toString();
                 }
-                moveMarker.setSnippet(addressName);
+                if (addressName.length() >= 40) {
+                    stringBuffer.insert(40, "\n").toString();
+                }
+                moveMarker.setSnippet(stringBuffer.toString());
                 moveMarker.showInfoWindow();
 
 

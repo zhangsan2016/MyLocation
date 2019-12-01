@@ -31,22 +31,23 @@
         android:theme="@style/AppTheme">
         <meta-data
             android:name="com.amap.api.v2.apikey"
-            android:value="3573503146ba3794d1143ae5175ba9da"></meta-data>
+            android:value="3573503146ba3794d1143ae5175ba9da" />
 
         <activity android:name=".MainActivity">
+
+        </activity>
+
+        <service android:name="com.amap.api.location.APSService" />
+
+        <activity android:name=".SaveUserInfoActivity" />
+        <activity android:name=".UserInfoActivity" />
+        <activity android:name=".StartActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <service android:name="com.amap.api.location.APSService" />
-
-        <activity android:name=".SaveUserInfoActivity"></activity>
-        <activity android:name=".UserInfoActivity"></activity>
-
-
     </application>
 
 </manifest>
