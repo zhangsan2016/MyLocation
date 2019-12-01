@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
     private void checkUserInfo() {
         SharedPreferencesUtil.getInstance(this, "ldgd");
         String userInfo = (String) SharedPreferencesUtil.getData(USER_INFO, "");
-        LogUtil.e("xxx userinfo = " + userInfo);
+
         if (userInfo.equals("")) {
             // 显示用户信息录入界面
             startSaveUser();
@@ -280,13 +280,10 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
                 userJson.setContact(currentUser.getPhone());
                 userJson.setCompany(currentUser.getShipperCompany());
                 userJson.setCustomer(currentUser.getReceivingCompany());
+                userJson.setDangerType(currentUser.getTypeNub() + "");
 
-                if (true) {
 
                     LogUtil.e("xxx" + userJson);
-                    stopProgress();
-                    return;
-                }
 
                 // 创建请求的参数body
                 //   String postBody = "{\"where\":{\"PROJECT\":" + title + "},\"size\":5000}";
@@ -630,9 +627,6 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
             //    moveMarker.setSnippet(latLng.toString());
             moveMarker.setPosition(new LatLng(latLng.latitude, latLng.longitude));
 
-            //根据latLng编译成地理描述
-            LatLonPoint latLonPoint = new LatLonPoint(latLng.latitude, latLng.longitude);
-            getAddress(latLonPoint);
 
 
         }
@@ -642,6 +636,10 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
 
     @Override
     public void onCameraChangeFinish(CameraPosition cameraPosition) {
+        //根据latLng编译成地理描述
+        LatLng latLng = cameraPosition.target;
+        LatLonPoint latLonPoint = new LatLonPoint(latLng.latitude, latLng.longitude);
+        getAddress(latLonPoint);
 
     }
 
@@ -654,6 +652,9 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
                     && result.getRegeocodeAddress().getFormatAddress() != null) {
 
                 addressName = result.getRegeocodeAddress().getFormatAddress();
+                moveMarker.setSnippet(addressName);
+                moveMarker.showInfoWindow();
+
 
             } else {
 

@@ -81,7 +81,7 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/aa" />
+                    android:src="@drawable/a6" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -136,13 +136,13 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/dd" />
+                    android:src="@drawable/aa" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="5dp"
-                    android:text="报警器电量" />
+                    android:text="  取消报警  " />
             </LinearLayout>
 
             <LinearLayout
