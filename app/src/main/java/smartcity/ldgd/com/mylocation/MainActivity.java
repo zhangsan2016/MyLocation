@@ -668,6 +668,10 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
                     && result.getRegeocodeAddress().getFormatAddress() != null) {
 
                 addressName = result.getRegeocodeAddress().getFormatAddress();
+                if( addressName.length() >= 20){
+                    StringBuffer stringBuffer = new StringBuffer(addressName);
+                    addressName = stringBuffer.insert(20, "\n").toString();
+                }
                 moveMarker.setSnippet(addressName);
                 moveMarker.showInfoWindow();
 
