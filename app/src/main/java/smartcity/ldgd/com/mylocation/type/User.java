@@ -11,7 +11,9 @@ public class User {
     private String carNumber;
     private int typeNub;
     private String phone;
+    // 寄货公司
     private String shipperCompany;
+    // 收货公司
     private String receivingCompany;
 
 

@@ -15,11 +15,13 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,6 +40,11 @@ import com.amap.api.maps.model.CameraPosition;
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.Marker;
 import com.amap.api.maps.model.MarkerOptions;
+import com.amap.api.services.core.LatLonPoint;
+import com.amap.api.services.geocoder.GeocodeResult;
+import com.amap.api.services.geocoder.GeocodeSearch;
+import com.amap.api.services.geocoder.RegeocodeQuery;
+import com.amap.api.services.geocoder.RegeocodeResult;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -54,13 +61,16 @@ import smartcity.ldgd.com.mylocation.util.LogUtil;
 import smartcity.ldgd.com.mylocation.util.NetUtils;
 import smartcity.ldgd.com.mylocation.util.SharedPreferencesUtil;
 
-public class MainActivity extends AppCompatActivity {
+import static smartcity.ldgd.com.mylocation.R.id.map;
+
+public class MainActivity extends AppCompatActivity implements AMap.OnCameraChangeListener, GeocodeSearch.OnGeocodeSearchListener, AMap.OnMapClickListener, AMap.OnMapTouchListener {
     public static final String USER_INFO = "USER_INFO";
 
     //声明AMapLocationClient类对象
     public AMapLocationClient mLocationClient = null;
     //声明AMapLocationClientOption对象
     public AMapLocationClientOption mLocationOption = null;
+    //  当前定位位置
     private AMapLocation mAMapLocation = null;
     private AlertDialog alarmDialog;
 
@@ -68,10 +78,18 @@ public class MainActivity extends AppCompatActivity {
     private AMap mAMap = null;
     private UiSettings mUiSettings;
     private Marker marker = null;
+    private Marker moveMarker = null;
     private MarkerOptions markerOption;
+    private MarkerOptions moveMarkerOption;
     // 四个按钮
     private LinearLayout llUserInfo, ll_alarm, ll_call;
     private User currentUser = null;
+    // 用户拖动地图后，不再跟随移动，需要跟随移动时再把这个改成true
+    private boolean followMove = true;
+    private GeocodeSearch geocoderSearch;
+    // 移动或者定位所获得的地址
+    private String addressName;
+    private ImageView iv_reposition;
 
 
     @Override
@@ -144,12 +162,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void initView(Bundle savedInstanceState) {
         //获取地图控件引用
-        mMapView = (MapView) findViewById(R.id.map);
+        mMapView = (MapView) findViewById(map);
         //在activity执行onCreate时执行mMapView.onCreate(savedInstanceState)，创建地图
         mMapView.onCreate(savedInstanceState);
         llUserInfo = (LinearLayout) this.findViewById(R.id.ll_user_info);
         ll_call = (LinearLayout) this.findViewById(R.id.ll_call);
         ll_alarm = (LinearLayout) this.findViewById(R.id.ll_alarm);
+        iv_reposition = (ImageView) this.findViewById(R.id.iv_reposition);
 
 
         llUserInfo.setOnClickListener(new View.OnClickListener() {
@@ -216,10 +235,24 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 alarmDialog.show();
+            }
+        });
 
+        iv_reposition.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mAMapLocation != null) {
+                    LatLng latLng = new LatLng(mAMapLocation.getLatitude(), mAMapLocation.getLongitude());
+                    marker.setPosition(latLng);
+                    marker.showInfoWindow();
+                    moveMarker.setPosition(latLng);
+                    moveMarker.setVisible(false);
+                    mAMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+                }
 
             }
         });
+
     }
 
     private void sendAlarm() {
@@ -241,9 +274,18 @@ public class MainActivity extends AppCompatActivity {
                 currentUser = gson.fromJson(userInfo, User.class);
 
                 //创建json
-                LatLng latLng = marker.getPosition();
+                LatLng latLng = moveMarker.getPosition();
                 UserJson userJson = new UserJson(currentUser.getCarNumber(), Double.toString(latLng.longitude), Double.toString(latLng.latitude));
+                userJson.setAddress(addressName);
+                userJson.setContact(currentUser.getPhone());
+                userJson.setCompany(currentUser.getShipperCompany());
+                userJson.setCustomer(currentUser.getReceivingCompany());
 
+                if (true) {
+                    LogUtil.e("xxx" + userJson);
+                    stopProgress();
+                    return;
+                }
 
                 // 创建请求的参数body
                 //   String postBody = "{\"where\":{\"PROJECT\":" + title + "},\"size\":5000}";
@@ -287,6 +329,7 @@ public class MainActivity extends AppCompatActivity {
                             }*/
                         } catch (Exception e) {
                             e.printStackTrace();
+                            stopProgress();
                             showToast("获取异常错误 ：" + e.getMessage());
                         }
 
@@ -356,6 +399,16 @@ public class MainActivity extends AppCompatActivity {
             mUiSettings.setZoomControlsEnabled(false);
             // 设置地图缩放比例
             mAMap.moveCamera(CameraUpdateFactory.zoomTo(5f));
+            //  对amap添加移动地图事件监听器
+            mAMap.setOnCameraChangeListener(this);
+            // 设置地图点监听击事件
+            mAMap.setOnMapClickListener(this);
+            // 设置地图触摸监听事件
+            mAMap.setOnMapTouchListener(this);
+            //返回地址详细信息代码
+            geocoderSearch = new GeocodeSearch(this);
+            geocoderSearch.setOnGeocodeSearchListener(this);
+
 
             // 添加覆盖物
         /*    markerOption = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_openmap_mark2))
@@ -411,11 +464,9 @@ public class MainActivity extends AppCompatActivity {
                 if (amapLocation != null) {
                     if (amapLocation.getErrorCode() == 0) {
 
-
                         mAMapLocation = amapLocation;
-                        //  LogUtil.e("My AMapLocation = " + mAMapLocation.getLatitude());
 
-                        //定位成功回调信息，设置相关消息
+                     /*   //定位成功回调信息，设置相关消息
                         amapLocation.getLocationType();//获取当前定位结果来源，如网络定位结果，详见定位类型表
 
                         amapLocation.getAccuracy();//获取精度信息
@@ -430,21 +481,45 @@ public class MainActivity extends AppCompatActivity {
                         amapLocation.getAdCode();//地区编码
                         amapLocation.getAoiName();//获取当前定位点的AOI信息
 
-                        Log.e("sss", "xxx 当前位置（经纬度） = " + amapLocation.getLatitude() + ":" + amapLocation.getLongitude() + " 当前位置在：" + amapLocation.getAddress());
+                        Log.e("sss", "xxx 当前位置（经纬度） = " + amapLocation.getLatitude() + ":" + amapLocation.getLongitude() + " 当前位置在：" + amapLocation.getAddress());*/
 
                         // 设置覆盖物
-                        if (mAMap != null) {
-                            mAMap.clear();
-                        }
-                        String address = amapLocation.getDistrict() + amapLocation.getStreet() + amapLocation.getAoiName() + amapLocation.getStreetNum();
-                        markerOption = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_openmap_mark2))
-                                .title("当前位置").snippet(address).position(new LatLng(amapLocation.getLatitude(), amapLocation.getLongitude()))
-                                .draggable(true);
-                        marker = mAMap.addMarker(markerOption);
-                        marker.showInfoWindow();
 
-                        // 设置地图中心点
-                        mAMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(new LatLng(amapLocation.getLatitude(), amapLocation.getLongitude()), 16, 0, 0)));
+                        if (followMove) {
+                            if (mAMap != null) {
+                                mAMap.clear();
+                            }
+
+                            // 保存定位地址，用于报警
+                            addressName = amapLocation.getDistrict() + amapLocation.getStreet() + amapLocation.getAoiName() + amapLocation.getStreetNum();
+
+                            // 设置定位点覆盖物
+                            String address = amapLocation.getDistrict() + amapLocation.getStreet() + amapLocation.getAoiName() + amapLocation.getStreetNum();
+                            markerOption = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_openmap_mark2))
+                                    .title("当前位置").snippet(address).position(new LatLng(amapLocation.getLatitude(), amapLocation.getLongitude()))
+                                    .draggable(false);
+                            marker = mAMap.addMarker(markerOption);
+                            marker.showInfoWindow();
+
+                            // 设置可移动覆盖物
+                            // 设置定位点覆盖物
+                            String moveAddress = amapLocation.getLatitude() + "," + amapLocation.getLongitude();
+                            moveMarkerOption = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_openmap_mark3))
+                                    .title("当前位置").snippet(moveAddress).position(new LatLng(amapLocation.getLatitude(), amapLocation.getLongitude()))
+                                    .draggable(true);
+                            moveMarker = mAMap.addMarker(moveMarkerOption);
+                            //  moveMarker.setAlpha(0);
+                            moveMarker.setVisible(false);
+                            moveMarker.hideInfoWindow();
+
+                            followMove = false;
+
+                               /*    if (followMove) {
+                            mMap.animateCamera(CameraUpdateFactory.newLatLng(latlng));
+                        }*/
+                            // 设置地图中心点
+                            mAMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(new LatLng(amapLocation.getLatitude(), amapLocation.getLongitude()), 16, 0, 0)));
+                        }
 
                     } else {
                         //显示错误信息ErrCode是错误码，errInfo是错误信息，详见错误码表。
@@ -475,7 +550,7 @@ public class MainActivity extends AppCompatActivity {
         if (null != mLocationClient) {
             mLocationClient.setLocationOption(option);
             //设置场景模式后最好调用一次stop，再调用start以保证场景模式生效
-   /*         mLocationClient.stopLocation();
+        /*         mLocationClient.stopLocation();
             mLocationClient.startLocation();*/
         }
 
@@ -518,6 +593,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * 响应逆地理编码
+     */
+    public void getAddress(final LatLonPoint latLonPoint) {
+        RegeocodeQuery query = new RegeocodeQuery(latLonPoint, 200,
+                GeocodeSearch.AMAP);// 第一个参数表示一个Latlng，第二参数表示范围多少米，第三个参数表示是火系坐标系还是GPS原生坐标系
+        geocoderSearch.getFromLocationAsyn(query);// 设置异步逆地理编码请求
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -534,4 +617,67 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+    @Override
+    public void onCameraChange(CameraPosition cameraPosition) {
+
+        LatLng latLng = cameraPosition.target;
+        LogUtil.e("cameraPosition = " + cameraPosition.toString());
+
+        if (markerOption != null) {
+            // moveMarker.setPosition(cameraPosition.target);
+            //    moveMarker.setSnippet(latLng.toString());
+            moveMarker.setPosition(new LatLng(latLng.latitude, latLng.longitude));
+
+            //根据latLng编译成地理描述
+            LatLonPoint latLonPoint = new LatLonPoint(latLng.latitude, latLng.longitude);
+            getAddress(latLonPoint);
+
+
+        }
+
+
+    }
+
+    @Override
+    public void onCameraChangeFinish(CameraPosition cameraPosition) {
+
+    }
+
+    @Override
+    public void onRegeocodeSearched(RegeocodeResult result, int rCode) {
+
+        if (rCode == 1000) {
+
+            if (result != null && result.getRegeocodeAddress() != null
+                    && result.getRegeocodeAddress().getFormatAddress() != null) {
+
+                addressName = result.getRegeocodeAddress().getFormatAddress();
+
+            } else {
+
+            }
+        } else {
+
+        }
+
+    }
+
+    @Override
+    public void onGeocodeSearched(GeocodeResult geocodeResult, int i) {
+
+    }
+
+    @Override
+    public void onMapClick(LatLng latLng) {
+
+    }
+
+    @Override
+    public void onTouch(MotionEvent motionEvent) {
+        if (moveMarker != null) {
+            moveMarker.setVisible(true);
+            marker.hideInfoWindow();
+        }
+    }
 }
