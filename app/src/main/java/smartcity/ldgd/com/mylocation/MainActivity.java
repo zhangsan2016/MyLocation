@@ -199,7 +199,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
             @Override
             public void onClick(View v) {
                 // 联系中心
-                Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + "110"));
+                Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + "13527315552"));
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
 
@@ -263,6 +263,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
                     }
                 });
                 alarmDialog.show();
+
 
               /*  //设置可获得焦点
                 edWriteCode.setFocusable(true);
