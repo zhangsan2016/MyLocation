@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
     private MarkerOptions markerOption;
     private MarkerOptions moveMarkerOption;
     // 四个按钮
-    private LinearLayout llUserInfo, ll_alarm, ll_call;
+    private LinearLayout llUserInfo, ll_alarm, ll_call, ll_cancel_alarm;
     private User currentUser = null;
     // 用户拖动地图后，不再跟随移动，需要跟随移动时再把这个改成true
     private boolean followMove = true;
@@ -115,8 +115,6 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
             }
         }
         setContentView(R.layout.activity_main);
-
-
 
 
         initView(savedInstanceState);
@@ -176,6 +174,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
         ll_call = (LinearLayout) this.findViewById(R.id.ll_call);
         ll_alarm = (LinearLayout) this.findViewById(R.id.ll_alarm);
         iv_reposition = (ImageView) this.findViewById(R.id.iv_reposition);
+        ll_cancel_alarm = (LinearLayout) this.findViewById(R.id.ll_cancel_alarm);
 
         list.add("杂类");
         list.add("气体");
@@ -209,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
         ll_alarm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(moveMarker != null){
+                if (moveMarker != null) {
                     // 隐藏 InfoWindow
                     moveMarker.hideInfoWindow();
                 }
@@ -292,6 +291,39 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
                     mAMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
                 }
 
+            }
+        });
+
+        ll_cancel_alarm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog dialog = new AlertDialog.Builder(MainActivity.this)
+                        .setTitle("取消报警")
+                        .setMessage("确定取消报警吗？")
+                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                new Thread(new Runnable() {
+                                    @Override
+                                   public void run() {
+                                        try {
+                                            Thread.sleep(500);
+                                            showToast("报警成功取消");
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }).start();
+
+                            }
+                        })
+                        .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+                        })
+                        .show();
             }
         });
 
