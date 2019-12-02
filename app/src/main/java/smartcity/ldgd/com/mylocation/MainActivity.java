@@ -209,8 +209,11 @@ public class MainActivity extends AppCompatActivity implements AMap.OnCameraChan
         ll_alarm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // 隐藏 InfoWindow
-                moveMarker.hideInfoWindow();
+                if(moveMarker != null){
+                    // 隐藏 InfoWindow
+                    moveMarker.hideInfoWindow();
+                }
+
                 // 报警
                 final String code = randomCode();
 
