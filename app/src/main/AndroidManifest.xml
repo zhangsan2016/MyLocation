@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="smartcity.ldgd.com.mylocation">
 
+
+    <!-- 水土园区危化品运输应急报警
+       实现一键报警、定位、修改定位等功能
+     -->
+
     <!-- 用于进行网络定位 -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <!-- 用于访问GPS定位 -->
